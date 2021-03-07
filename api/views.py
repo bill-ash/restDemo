@@ -33,11 +33,33 @@ from rest_framework.generics import (
 from .models import Todo
 from .serializers import TodoSerializer
 
+from django.contrib.auth.models import User
+from .serializers import UserSerializer
+
+## Add some users 
+
+class UserList(ListCreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer 
+
+class UserDetail(RetrieveUpdateDestroyAPIView): 
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
 # Using class based views to generalize our code even further... offers 5 different 
 # methods in two classes. List, Create, Detail, Update, Delete 
 class TodoList(ListCreateAPIView): 
     queryset = Todo.objects.all()
     serializer_class = TodoSerializer 
+
+    def perform_create(self, serializer): 
+        """Adds the current logged in user to the owner field. Works as a pre-save 
+        method. Requires updating the serializer with the source argument.
+        """
+        # Hack for making post requests from command line. 
+        user = User.objects.all()[0]
+        serializer.save(owner=user)
+        # serializer.save(owner=self.request.user)
 
 class TodoDetail(RetrieveUpdateDestroyAPIView): 
     queryset = Todo.objects.all()
