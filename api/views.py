@@ -12,6 +12,9 @@ from rest_framework.views import APIView
 # Make sure the response content is what the client requested 
 from rest_framework.response import Response 
 
+# For creating proper full urls to link foreign keys as URLs.
+from rest_framework.reverse import reverse 
+
 # Rather than defining boiler plate for each endpoint method(http verb) we 
 # can import helpful mixins - like django.views.generic (list, detail, create) that 
 # add CRUD support. 
@@ -40,8 +43,20 @@ from .serializers import UserSerializer
 from rest_framework import permissions 
 from .permissions import IsOwnerOrReadOnly
 
-## Add some users 
 
+
+# Create a ROOT api so that we can buiild relationships between users and Todos 
+# fulls urls instead of just primary keys. 
+@api_view(['GET'])
+def api_root(request, format=None): 
+
+    return Response({
+        'users': reverse('user-list', request=request, format=format),
+        'todo': reverse('todo-list', request=request, format=format)
+
+    })
+
+## Add some users 
 class UserList(ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer 

@@ -11,10 +11,11 @@ app_name = 'api'
 urlpatterns = [
     # path('todo/', views.todo_list, name='todo_list'),
     # path('todo/<int:pk>', views.todo_detail, name='todo_detail'),
-    path('todo/', TodoList.as_view(), name='todo_list'),
-    path('todo/<int:pk>', TodoDetail.as_view(), name='todo_detail'),
-    path('user/', UserList.as_view(), name='user_list'),
-    path('user/<int:pk>', UserDetail.as_view(), name='user_detail'),
+    path('', views.api_root),
+    path('todo/', TodoList.as_view(), name='todo-list'),
+    path('todo/<int:pk>', TodoDetail.as_view(), name='todo-detail'),
+    path('user/', UserList.as_view(), name='user-list'),
+    path('user/<int:pk>', UserDetail.as_view(), name='user-detail'),
 
 ]
 
