@@ -12,6 +12,16 @@ from rest_framework.views import APIView
 # Make sure the response content is what the client requested 
 from rest_framework.response import Response 
 
+# Rather than defining boiler plate for each endpoint method(http verb) we 
+# can import helpful mixins - like django.views.generic (list, detail, create) that 
+# add CRUD support. 
+from rest_framework.mixins import (
+    ListModelMixin, CreateModelMixin, RetrieveModelMixin, 
+    DestroyModelMixin, UpdateModelMixin, 
+)
+# Used with the GenericAPIView 
+from rest_framework.generics import GenericAPIView
+
 # Format suffix patterns: format=None adds support to handle an array of content 
 # types since our Response objects will now default to whatever the clinet requests. 
 
@@ -21,55 +31,80 @@ from .models import Todo
 from .serializers import TodoSerializer
 
 # Class based views inherit from APIView
-class TodoList(APIView): 
+class TodoList(ListModelMixin, CreateModelMixin, GenericAPIView): 
 
-    def get(self, request, format=None): 
-        queryset = Todo.objects.all()
-        todos = TodoSerializer(queryset, many=True)
-        return Response(todos.data)
+    # Define class data objects 
+    queryset = Todo.objects.all()
+    serializer_class = TodoSerializer
+
+    def get(self,request, *args, **kwargs): 
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs): 
+        return self.create(request, *args, **kwargs)
+
+    # def get(self, request, format=None): 
+    #     queryset = Todo.objects.all()
+    #     todos = TodoSerializer(queryset, many=True)
+    #     return Response(todos.data)
         
-    def post(self, request, format=None): 
-        todo = TodoSerializer(data=request.data)
-        if todo.is_valid(): 
-            todo.save()
-            return Response(todo.data, status=status.HTTP_201_CREATED)
-        return Response(todo.errors, status=status.HTTP_400_BAD_REQUEST)
+    # def post(self, request, format=None): 
+    #     todo = TodoSerializer(data=request.data)
+    #     if todo.is_valid(): 
+    #         todo.save()
+    #         return Response(todo.data, status=status.HTTP_201_CREATED)
+    #     return Response(todo.errors, status=status.HTTP_400_BAD_REQUEST)
         
-
-class TodoDetail(APIView): 
-
-    def get_object(self, pk):
-        try:
-            return Todo.objects.get(pk=pk)
-        except Todo.DoesNotExist:
-            raise Http404
-        
-    def get(self, request, pk, format=None): 
-        queryset = self.get_object(pk)
-        todo = TodoSerializer(queryset)
-        return Response(todo.data)
-
-    def put(self, request, pk, format=None): 
-        queryset = self.get_object(pk)
-        todo = TodoSerializer(queryset, data=request.data)
-        if todo.is_valid(): 
-            todo.save()
-            return Response(todo.data)
-        return Response(todo.errors, status=status.HTTP_400_BAD_REQUEST)
+# Core is built on the GenericAPIView and each mixin adds additional behavior. 
+class TodoDetail(
+    RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin, GenericAPIView
+    ):
     
-    def patch(self, request, pk, format=None): 
-        queryset = self.get_object(pk)
-        todo = TodoSerializer(queryset, data=request.data)
-        if todo.is_valid(): 
-            todo.save()
-            return Response(todo.data)
-        return Response(todo.errors, status=status.HTTP_400_BAD_REQUEST)
+    queryset = Todo.objects.all()
+    serializer_class = TodoSerializer
 
-    def delete(self, request, pk, format=None):
-        queryset = self.get_object(pk)
-        # No need to serialize - delete 
-        queryset.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+
+    
+    # def get_object(self, pk):
+    #     try:
+    #         return Todo.objects.get(pk=pk)
+    #     except Todo.DoesNotExist:
+    #         raise Http404
+        
+    # def get(self, request, pk, format=None): 
+    #     queryset = self.get_object(pk)
+    #     todo = TodoSerializer(queryset)
+    #     return Response(todo.data)
+
+    # def put(self, request, pk, format=None): 
+    #     queryset = self.get_object(pk)
+    #     todo = TodoSerializer(queryset, data=request.data)
+    #     if todo.is_valid(): 
+    #         todo.save()
+    #         return Response(todo.data)
+    #     return Response(todo.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    # def patch(self, request, pk, format=None): 
+    #     queryset = self.get_object(pk)
+    #     todo = TodoSerializer(queryset, data=request.data)
+    #     if todo.is_valid(): 
+    #         todo.save()
+    #         return Response(todo.data)
+    #     return Response(todo.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # def delete(self, request, pk, format=None):
+    #     queryset = self.get_object(pk)
+    #     # No need to serialize - delete 
+    #     queryset.delete()
+    #     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 
