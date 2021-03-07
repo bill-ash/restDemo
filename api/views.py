@@ -36,6 +36,10 @@ from .serializers import TodoSerializer
 from django.contrib.auth.models import User
 from .serializers import UserSerializer
 
+# Adding permissions to an object 
+from rest_framework import permissions 
+from .permissions import IsOwnerOrReadOnly
+
 ## Add some users 
 
 class UserList(ListCreateAPIView):
@@ -51,6 +55,9 @@ class UserDetail(RetrieveUpdateDestroyAPIView):
 class TodoList(ListCreateAPIView): 
     queryset = Todo.objects.all()
     serializer_class = TodoSerializer 
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly
+        ]
 
     def perform_create(self, serializer): 
         """Adds the current logged in user to the owner field. Works as a pre-save 
@@ -64,6 +71,9 @@ class TodoList(ListCreateAPIView):
 class TodoDetail(RetrieveUpdateDestroyAPIView): 
     queryset = Todo.objects.all()
     serializer_class = TodoSerializer
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly
+        ]
 
 
 # Class based views inherit from APIView
